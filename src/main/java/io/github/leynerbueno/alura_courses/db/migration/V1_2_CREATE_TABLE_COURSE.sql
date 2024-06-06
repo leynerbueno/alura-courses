@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS COURSE (
+    id INTEGER PRIMARY KEY AUTO_INCREMENT,
+    code VARCHAR(20),
+    name VARCHAR(150),
+    instructor_id INTEGER REFERENCES USER_SYSTEM (ID),
+    description VARCHAR(200),
+    status VARCHAR (20),
+    dt_delete TIMESTAMP,
+    dt_insert TIMESTAMP
+);

@@ -3,9 +3,12 @@ package io.github.leynerbueno.alura_courses.entity;
 import java.time.LocalDateTime;
 
 import io.github.leynerbueno.alura_courses.enums.Role;
+import io.github.leynerbueno.alura_courses.validation.ValidRole;
 import io.github.leynerbueno.alura_courses.validation.ValidUsername;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -46,10 +49,10 @@ public class UserEntity {
     @Column(name = "password", length = 50)
     private String password;
 
-    // @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.STRING)
     @NotNull(message = "role is required")
     @Column(name = "role")
-    // @ValidRole
+    @ValidRole
     private Role role;
 
     @Column(name = "dt_insert")
