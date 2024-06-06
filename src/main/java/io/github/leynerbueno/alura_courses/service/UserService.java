@@ -1,7 +1,5 @@
 package io.github.leynerbueno.alura_courses.service;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,11 +13,13 @@ import io.github.leynerbueno.alura_courses.exception.GeneralException;
 import io.github.leynerbueno.alura_courses.repository.UserRepository;
 import io.github.leynerbueno.alura_courses.rest.dto.UserDTO;
 import io.github.leynerbueno.alura_courses.service.impl.UserInterface;
+import io.github.leynerbueno.alura_courses.util.AluraUtil;
 
 @Service
 public class UserService implements UserInterface {
 
     private UserRepository repository;
+    private AluraUtil aluraUtil = AluraUtil.getInstance();
 
     public UserService(UserRepository repository) {
         this.repository = repository;
@@ -33,13 +33,17 @@ public class UserService implements UserInterface {
 
         entity.setEmail(entity.getEmail());
         entity.setUsername(entity.getUsername().toLowerCase());
-        entity.setDtInsert(this.getLocalDateTime());
+        entity.setDtInsert(aluraUtil.getLocalDateTime());
 
         return repository.save(entity);
     }
 
     @Override
     public UserEntity find(Integer id) {
+        if (id == null) {
+            throw new GeneralException("id is required");
+        }
+
         return repository.findById(id)
                 .orElseThrow(() -> new GeneralException("User not found"));
     }
@@ -62,7 +66,13 @@ public class UserService implements UserInterface {
     @Override
     @Transactional
     public UserEntity update(UserEntity entity) {
-        return repository.findById(entity.getId())
+        Integer id = entity.getId();
+
+        if (id == null) {
+            throw new GeneralException("id is required");
+        }
+
+        return repository.findById(id)
                 .map(user -> {
                     if (entity.getEmail() != null && !user.getEmail().equals(entity.getEmail())) {
                         this.checkEmailAvaiable(entity.getEmail());
@@ -85,17 +95,16 @@ public class UserService implements UserInterface {
 
     @Override
     public void delete(Integer id) {
+        if (id == null) {
+            throw new GeneralException("id is required");
+        }
+
         repository.findById(id)
                 .map(user -> {
                     repository.delete(user);
                     return user;
                 })
                 .orElseThrow(() -> new GeneralException("User not found"));
-    }
-
-    private LocalDateTime getLocalDateTime() {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
-        return LocalDateTime.parse(LocalDateTime.now().format(formatter), formatter);
     }
 
     private void checkEmailAvaiable(String email) {
