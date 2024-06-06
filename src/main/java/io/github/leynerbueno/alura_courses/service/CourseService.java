@@ -20,6 +20,7 @@ import io.github.leynerbueno.alura_courses.repository.CourseRepository;
 import io.github.leynerbueno.alura_courses.repository.UserRepository;
 import io.github.leynerbueno.alura_courses.rest.dto.CourseDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.FilteredCoursesDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.ListCurseDTO;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
 import lombok.RequiredArgsConstructor;
@@ -52,7 +53,7 @@ public class CourseService implements CourseInterface {
         entity.setInstructor(instructor);
         entity.setStatus(Status.ACTIVE);
         entity.setDtInsert(aluraUtil.getLocalDateTime());
-        entity.setDtDelete(null);
+        entity.setDtInactivate(null);
 
         return repository.save(entity);
     }
@@ -86,7 +87,7 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
-    public FilteredCoursesDTO list(CourseDTO dto) {
+    public FilteredCoursesDTO list(ListCurseDTO dto) {
         FilteredCoursesDTO courses = new FilteredCoursesDTO();
 
         if (dto.getPage() == null) {
@@ -124,8 +125,8 @@ public class CourseService implements CourseInterface {
 
     @Override
     @Transactional
-    public CourseEntity update(CourseEntity entity) {
-        Integer id = entity.getId();
+    public CourseEntity update(CourseDTO dto) {
+        Integer id = dto.getId();
 
         if (id == null) {
             throw new GeneralException("id is required");
@@ -133,8 +134,22 @@ public class CourseService implements CourseInterface {
 
         return repository.findById(id)
                 .map(course -> {
-                    entity.setStatus(course.getStatus());
+                    Integer userId = dto.getInstructor();
+                    UserEntity instructor = userRepository.findById(userId)
+                            .orElseThrow(() -> new GeneralException("Instructor not found"));
+
+                    if (instructor.getRole().compareTo(Role.INSTRUCTOR) != 0) {
+                        throw new GeneralException(
+                                "The user informed as an instructor is not registered as an instructor");
+                    }
+
+                    CourseEntity entity = new CourseEntity();
+                    entity.setId(id);
                     entity.setCode(course.getCode());
+                    entity.setName(course.getName());
+                    entity.setInstructor(instructor);
+                    entity.setDescription(course.getDescription());
+                    entity.setStatus(course.getStatus());
                     entity.setDtInsert(course.getDtInsert());
                     repository.save(entity);
                     return course;
@@ -151,7 +166,7 @@ public class CourseService implements CourseInterface {
         repository.findByCode(code)
                 .map(course -> {
                     course.setStatus(Status.INACTIVE);
-                    course.setDtDelete(aluraUtil.getLocalDateTime());
+                    course.setDtInactivate(aluraUtil.getLocalDateTime());
                     repository.save(course);
                     return course;
                 })

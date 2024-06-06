@@ -1,6 +1,7 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.stream.Collectors;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 
 import io.github.leynerbueno.alura_courses.exception.GeneralException;
@@ -20,7 +22,14 @@ public class ApplicationControllerAdvice {
 
     @ExceptionHandler(GeneralException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public Errors handleMessageGeneralExceptions(GeneralException e) {
+    public Errors handleGeneralExceptions(GeneralException e) {
+        String errorMessage = e.getMessage();
+        return new Errors(errorMessage);
+    }
+
+    @ExceptionHandler(DateTimeParseException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Errors handleDateTimeExceptions(DateTimeParseException e) {
         String errorMessage = e.getMessage();
         return new Errors(errorMessage);
     }
@@ -44,6 +53,8 @@ public class ApplicationControllerAdvice {
                 String originalMessage = ife.getOriginalMessage();
                 return new Errors(extractRelevantMessage(originalMessage));
             }
+        } else if (cause instanceof InvalidFormatException) {
+            return new Errors("Invalid date format");
         }
         return new Errors(e.getMessage());
     }

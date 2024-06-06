@@ -52,8 +52,8 @@ public class CourseEntity {
     @Column(name = "status", length = 20)
     private Status status;
 
-    @Column(name = "dt_delete")
-    private LocalDateTime dtDelete;
+    @Column(name = "dt_inactivate")
+    private LocalDateTime dtInactivate;
 
     @Column(name = "dt_insert")
     private LocalDateTime dtInsert;

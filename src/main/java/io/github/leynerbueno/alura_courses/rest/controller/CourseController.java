@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
 import io.github.leynerbueno.alura_courses.rest.dto.CourseDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.FilteredCoursesDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.ListCurseDTO;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
 import jakarta.validation.Valid;
 
@@ -49,13 +50,13 @@ public class CourseController {
     }
 
     @GetMapping("list")
-    public FilteredCoursesDTO list(@RequestBody CourseDTO dto) {
+    public FilteredCoursesDTO list(@RequestBody ListCurseDTO dto) {
         return service.list(dto);
     }
 
     @PutMapping("update")
-    public CourseEntity update(@RequestBody CourseEntity entity) {
-        return service.update(entity);
+    public CourseEntity update(@RequestBody @Valid CourseDTO dto) {
+        return service.update(dto);
     }
 
     @PutMapping("inactivate")
