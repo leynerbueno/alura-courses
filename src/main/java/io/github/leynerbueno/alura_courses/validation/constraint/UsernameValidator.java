@@ -12,7 +12,7 @@ public class UsernameValidator implements ConstraintValidator<ValidUsername, Str
     public boolean isValid(String value, ConstraintValidatorContext context) {
         String regex = ".*[\\d\\s].*";
         Pattern pattern = Pattern.compile(regex);
-        return value != null && !pattern.matcher(value).matches();
+        return value != null && !value.isEmpty() && !pattern.matcher(value).matches();
     }
 
 }
