@@ -41,7 +41,7 @@ public class CourseEntity {
     private String name;
 
     @ManyToOne
-    @NotNull(message = "instructorId is required")
+    @NotNull(message = "instructor is required")
     @JoinColumn(name = "instructor_id")
     private UserEntity instructor;
 
@@ -49,7 +49,7 @@ public class CourseEntity {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status")
+    @Column(name = "status", length = 20)
     private Status status;
 
     @Column(name = "dt_delete")
