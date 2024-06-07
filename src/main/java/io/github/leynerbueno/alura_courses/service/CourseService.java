@@ -3,6 +3,7 @@ package io.github.leynerbueno.alura_courses.service;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
@@ -20,6 +21,7 @@ import io.github.leynerbueno.alura_courses.repository.CourseRepository;
 import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
+import io.github.leynerbueno.alura_courses.service.event.CourseInactivatedEvent;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,8 @@ public class CourseService implements CourseInterface {
 
     private final CourseRepository repository;
     private final UserService userService;
+    private final ApplicationEventPublisher publisher;
+
     private AluraUtil aluraUtil = AluraUtil.getInstance();
 
     @Override
@@ -158,6 +162,8 @@ public class CourseService implements CourseInterface {
         entity.setStatus(Status.INACTIVE);
         entity.setDtInactivate(aluraUtil.getLocalDateTime());
         repository.save(entity);
+
+        publisher.publishEvent(new CourseInactivatedEvent(this, entity.getId()));
     }
 
     public CourseEntity validate(Integer id) {
