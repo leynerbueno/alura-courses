@@ -11,7 +11,8 @@ import io.github.leynerbueno.alura_courses.enums.Status;
 
 public interface CourseRepository extends JpaRepository<CourseEntity, Integer> {
 
-    Optional<CourseEntity> findByCode(String code);
+    public Optional<CourseEntity> findByCode(String code);
 
-    Page<CourseEntity> findByStatus(Status status, Pageable pageable);
+    public Page<CourseEntity> findByStatus(Status status, Pageable pageable);
+
 }

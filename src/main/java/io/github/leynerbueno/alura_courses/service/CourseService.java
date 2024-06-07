@@ -17,10 +17,9 @@ import io.github.leynerbueno.alura_courses.enums.Role;
 import io.github.leynerbueno.alura_courses.enums.Status;
 import io.github.leynerbueno.alura_courses.exception.GeneralException;
 import io.github.leynerbueno.alura_courses.repository.CourseRepository;
-import io.github.leynerbueno.alura_courses.repository.UserRepository;
-import io.github.leynerbueno.alura_courses.rest.dto.CourseDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.FilteredCoursesDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.ListCurseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
 import lombok.RequiredArgsConstructor;
@@ -30,15 +29,13 @@ import lombok.RequiredArgsConstructor;
 public class CourseService implements CourseInterface {
 
     private final CourseRepository repository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private AluraUtil aluraUtil = AluraUtil.getInstance();
 
     @Override
     @Transactional
     public CourseEntity insert(CourseDTO dto) {
-        Integer userId = dto.getInstructor();
-        UserEntity instructor = userRepository.findById(userId)
-                .orElseThrow(() -> new GeneralException("Instructor not found"));
+        UserEntity instructor = userService.validate(dto.getInstructor(), Role.INSTRUCTOR);
 
         if (instructor.getRole().compareTo(Role.INSTRUCTOR) != 0) {
             throw new GeneralException("The user informed as an instructor is not registered as an instructor");
@@ -59,23 +56,21 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
-    public CourseEntity find(Integer id) {
+    public Optional<CourseEntity> find(Integer id) {
         if (id == null) {
             throw new GeneralException("id is required");
         }
 
-        return repository.findById(id)
-                .orElseThrow(() -> new GeneralException("Course not found"));
+        return repository.findById(id);
     }
 
     @Override
-    public CourseEntity findByCode(String code) {
+    public Optional<CourseEntity> findByCode(String code) {
         if (code == null) {
             throw new GeneralException("code is required");
         }
 
-        return repository.findByCode(code)
-                .orElseThrow(() -> new GeneralException("Course not found"));
+        return repository.findByCode(code);
     }
 
     @Override
@@ -87,7 +82,7 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
-    public FilteredCoursesDTO list(ListCurseDTO dto) {
+    public FilteredCoursesDTO list(ListCourseDTO dto) {
         FilteredCoursesDTO courses = new FilteredCoursesDTO();
 
         if (dto.getPage() == null) {
@@ -134,9 +129,7 @@ public class CourseService implements CourseInterface {
 
         return repository.findById(id)
                 .map(course -> {
-                    Integer userId = dto.getInstructor();
-                    UserEntity instructor = userRepository.findById(userId)
-                            .orElseThrow(() -> new GeneralException("Instructor not found"));
+                    UserEntity instructor = userService.validate(dto.getInstructor(), Role.INSTRUCTOR);
 
                     if (instructor.getRole().compareTo(Role.INSTRUCTOR) != 0) {
                         throw new GeneralException(
@@ -158,18 +151,30 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
+    @Transactional
     public void inactivate(String code) {
+        CourseEntity entity = this.validateByCode(code);
+
+        entity.setStatus(Status.INACTIVE);
+        entity.setDtInactivate(aluraUtil.getLocalDateTime());
+        repository.save(entity);
+    }
+
+    public CourseEntity validate(Integer id) {
+        if (id == null) {
+            throw new GeneralException("id is required");
+        }
+
+        return repository.findById(id)
+                .orElseThrow(() -> new GeneralException("Course not found"));
+    }
+
+    public CourseEntity validateByCode(String code) {
         if (code == null) {
             throw new GeneralException("code is required");
         }
 
-        repository.findByCode(code)
-                .map(course -> {
-                    course.setStatus(Status.INACTIVE);
-                    course.setDtInactivate(aluraUtil.getLocalDateTime());
-                    repository.save(course);
-                    return course;
-                })
+        return repository.findByCode(code)
                 .orElseThrow(() -> new GeneralException("Course not found"));
     }
 

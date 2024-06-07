@@ -8,7 +8,7 @@ import io.github.leynerbueno.alura_courses.entity.UserEntity;
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-    Optional<UserEntity> findByEmail(String email);
+    public Optional<UserEntity> findByEmail(String email);
 
-    Optional<UserEntity> findByUsername(String username);
+    public Optional<UserEntity> findByUsername(String username);
 }

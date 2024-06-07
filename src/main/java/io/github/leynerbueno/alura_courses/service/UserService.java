@@ -9,20 +9,30 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.leynerbueno.alura_courses.entity.UserEntity;
+import io.github.leynerbueno.alura_courses.enums.Role;
 import io.github.leynerbueno.alura_courses.exception.GeneralException;
 import io.github.leynerbueno.alura_courses.repository.UserRepository;
-import io.github.leynerbueno.alura_courses.rest.dto.UserDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.user.UserDTO;
 import io.github.leynerbueno.alura_courses.service.impl.UserInterface;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class UserService implements UserInterface {
 
-    private UserRepository repository;
+    private final UserRepository repository;
     private AluraUtil aluraUtil = AluraUtil.getInstance();
 
-    public UserService(UserRepository repository) {
-        this.repository = repository;
+    public UserEntity validate(Integer id, Role role) {
+        if (id == null) {
+            throw new GeneralException("id is required");
+        }
+
+        String message = String.format("%s not found", role.name());
+
+        return repository.findById(id)
+                .orElseThrow(() -> new GeneralException(message));
     }
 
     @Override
@@ -39,20 +49,18 @@ public class UserService implements UserInterface {
     }
 
     @Override
-    public UserEntity find(Integer id) {
+    public Optional<UserEntity> find(Integer id) {
         if (id == null) {
             throw new GeneralException("id is required");
         }
 
-        return repository.findById(id)
-                .orElseThrow(() -> new GeneralException("User not found"));
+        return repository.findById(id);
     }
 
     @Override
-    public UserDTO findByUsername(String username) {
+    public Optional<UserDTO> findByUsername(String username) {
         return repository.findByUsername(username)
-                .map(user -> this.converter(user))
-                .orElseThrow(() -> new GeneralException("User not found"));
+                .map(user -> this.converter(user));
     }
 
     @Override

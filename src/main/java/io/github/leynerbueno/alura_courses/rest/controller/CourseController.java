@@ -1,6 +1,7 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,21 +13,19 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
-import io.github.leynerbueno.alura_courses.rest.dto.CourseDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.FilteredCoursesDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.ListCurseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/course")
 public class CourseController {
 
     private CourseInterface service;
-
-    public CourseController(CourseInterface service) {
-        this.service = service;
-    }
 
     @PostMapping("insert")
     @ResponseStatus(HttpStatus.CREATED)
@@ -35,12 +34,12 @@ public class CourseController {
     }
 
     @GetMapping("find")
-    public CourseEntity find(@RequestBody CourseEntity entity) {
+    public Optional<CourseEntity> find(@RequestBody CourseEntity entity) {
         return service.find(entity.getId());
     }
 
     @GetMapping("find-by-code")
-    public CourseEntity findByCode(@RequestBody CourseEntity entity) {
+    public Optional<CourseEntity> findByCode(@RequestBody CourseEntity entity) {
         return service.findByCode(entity.getCode());
     }
 
@@ -50,7 +49,7 @@ public class CourseController {
     }
 
     @GetMapping("list")
-    public FilteredCoursesDTO list(@RequestBody ListCurseDTO dto) {
+    public FilteredCoursesDTO list(@RequestBody ListCourseDTO dto) {
         return service.list(dto);
     }
 

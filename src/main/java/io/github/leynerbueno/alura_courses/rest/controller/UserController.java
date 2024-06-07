@@ -1,6 +1,7 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -13,19 +14,17 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.leynerbueno.alura_courses.entity.UserEntity;
-import io.github.leynerbueno.alura_courses.rest.dto.UserDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.user.UserDTO;
 import io.github.leynerbueno.alura_courses.service.impl.UserInterface;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 
 @RestController
+@AllArgsConstructor
 @RequestMapping("/api/user")
 public class UserController {
 
     private UserInterface service;
-
-    public UserController(UserInterface service) {
-        this.service = service;
-    }
 
     @PostMapping("insert")
     @ResponseStatus(HttpStatus.CREATED)
@@ -34,12 +33,12 @@ public class UserController {
     }
 
     @GetMapping("find")
-    public UserEntity find(@RequestBody UserEntity entity) {
+    public Optional<UserEntity> find(@RequestBody UserEntity entity) {
         return service.find(entity.getId());
     }
 
     @GetMapping("find-by-username")
-    public UserDTO findByUsername(@RequestBody UserEntity entity) {
+    public Optional<UserDTO> findByUsername(@RequestBody UserEntity entity) {
         return service.findByUsername(entity.getUsername());
     }
 

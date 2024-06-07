@@ -27,14 +27,6 @@ public enum Status {
         return name();
     }
 
-    public static Status unformat(String status) {
-        try {
-            return valueOf(status.replace("-", "_"));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static List<String> list() {
         List<String> values = new ArrayList<>();
         for (Status status : Status.values()) {

@@ -1,25 +1,26 @@
 package io.github.leynerbueno.alura_courses.service.impl;
 
 import java.util.List;
+import java.util.Optional;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
-import io.github.leynerbueno.alura_courses.rest.dto.CourseDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.FilteredCoursesDTO;
-import io.github.leynerbueno.alura_courses.rest.dto.ListCurseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
 
 public interface CourseInterface {
 
-    CourseEntity insert(CourseDTO dto);
+    public CourseEntity insert(CourseDTO dto);
 
-    CourseEntity find(Integer id);
+    public Optional<CourseEntity> find(Integer id);
 
-    CourseEntity findByCode(String code);
+    public Optional<CourseEntity> findByCode(String code);
 
-    List<CourseEntity> filter(CourseEntity entity);
+    public List<CourseEntity> filter(CourseEntity entity);
 
-    FilteredCoursesDTO list(ListCurseDTO dto);
+    public FilteredCoursesDTO list(ListCourseDTO dto);
 
-    CourseEntity update(CourseDTO dto);
+    public CourseEntity update(CourseDTO dto);
 
-    void inactivate(String code);
+    public void inactivate(String code);
 }

@@ -1,4 +1,4 @@
-package io.github.leynerbueno.alura_courses.rest.dto;
+package io.github.leynerbueno.alura_courses.rest.dto.user;
 
 import io.github.leynerbueno.alura_courses.enums.Role;
 import lombok.AllArgsConstructor;

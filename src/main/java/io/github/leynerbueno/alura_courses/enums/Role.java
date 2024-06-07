@@ -28,14 +28,6 @@ public enum Role {
         return name();
     }
 
-    public static Role unformat(String role) {
-        try {
-            return valueOf(role.replace("-", "_"));
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     public static List<String> list() {
         List<String> values = new ArrayList<>();
         for (Role role : Role.values()) {
