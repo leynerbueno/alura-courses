@@ -3,6 +3,7 @@ package io.github.leynerbueno.alura_courses.rest.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,26 +33,31 @@ public class UserController {
     }
 
     @GetMapping("find")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserEntity find(@RequestBody UserEntity entity) {
         return service.find(entity.getId());
     }
 
     @GetMapping("find-by-username")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserDTO findByUsername(@RequestBody UserEntity entity) {
-        return service.findByUsername(entity.getUsername());
+        return service.findDTOByUsername(entity.getUsername());
     }
 
     @GetMapping("filter")
+    @PreAuthorize("hasRole('ADMIN')")
     public List<UserEntity> filter(@RequestBody UserEntity entity) {
         return service.filter(entity);
     }
 
     @PutMapping("update")
+    @PreAuthorize("hasRole('ADMIN')")
     public UserEntity update(@RequestBody UserEntity entity) {
         return service.update(entity);
     }
 
     @DeleteMapping("delete")
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@RequestBody UserEntity entity) {
         service.delete(entity.getId());

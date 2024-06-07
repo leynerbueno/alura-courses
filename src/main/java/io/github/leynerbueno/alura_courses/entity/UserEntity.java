@@ -46,7 +46,7 @@ public class UserEntity {
     private String email;
 
     @NotNull(message = "password is required")
-    @Column(name = "password", length = 50)
+    @Column(name = "password", length = 150)
     private String password;
 
     @Enumerated(EnumType.STRING)

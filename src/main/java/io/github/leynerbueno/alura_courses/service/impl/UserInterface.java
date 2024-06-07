@@ -11,7 +11,7 @@ public interface UserInterface {
 
     public UserEntity find(Integer id);
 
-    public UserDTO findByUsername(String username);
+    public UserDTO findDTOByUsername(String username);
 
     public List<UserEntity> filter(UserEntity entity);
 

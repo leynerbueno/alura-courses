@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService implements UserInterface {
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
     private AluraUtil aluraUtil = AluraUtil.getInstance();
 
     public UserEntity validate(Integer id, Role role) {
@@ -46,6 +48,7 @@ public class UserService implements UserInterface {
         entity.setEmail(entity.getEmail());
         entity.setUsername(entity.getUsername().toLowerCase());
         entity.setDtInsert(aluraUtil.getLocalDateTime());
+        entity.setPassword(passwordEncoder.encode(entity.getPassword()));
 
         return repository.save(entity);
     }
@@ -61,7 +64,7 @@ public class UserService implements UserInterface {
     }
 
     @Override
-    public UserDTO findByUsername(String username) {
+    public UserDTO findDTOByUsername(String username) {
         return repository.findByUsername(username)
                 .map(user -> {
                     UserDTO dto = new UserDTO();
@@ -69,6 +72,16 @@ public class UserService implements UserInterface {
                     return dto;
                 }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "User not found"));
+    }
+
+    public UserEntity findByUsername(String username) {
+        Optional<UserEntity> user = repository.findByUsername(username);
+
+        if (user.isEmpty()) {
+            return null;
+        }
+
+        return user.get();
     }
 
     @Override
