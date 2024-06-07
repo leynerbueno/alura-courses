@@ -4,6 +4,8 @@ import java.util.stream.Collectors;
 import java.time.format.DateTimeParseException;
 import java.util.List;
 
+import org.hibernate.exception.DataException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -23,6 +25,23 @@ public class ApplicationControllerAdvice {
     @ExceptionHandler(GeneralException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Errors handleGeneralExceptions(GeneralException e) {
+        String errorMessage = e.getMessage();
+        return new Errors(errorMessage);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Errors handleDataIntegrityViolationExceptions(DataIntegrityViolationException e) {
+        if (e.getCause() instanceof DataException) {
+            String cause = e.getCause().getMessage();
+            if (cause.contains("Value too long for column \"") && cause.contains("CHARACTER VARYING")) {
+                int index = cause.indexOf("\"") + 1;
+                String value = cause.substring(index, cause.indexOf("CHARACTER VARYING", index));
+                String maxSize = cause.substring(cause.indexOf("(", index) + 1, cause.indexOf(")", index));
+                return new Errors("The value of " + value + " is too large (max size is " + maxSize+")");
+            }
+        }
+
         String errorMessage = e.getMessage();
         return new Errors(errorMessage);
     }

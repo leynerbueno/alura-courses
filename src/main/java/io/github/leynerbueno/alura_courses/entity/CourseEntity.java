@@ -32,7 +32,7 @@ public class CourseEntity {
     private Integer id;
 
     @NotNull(message = "code is required")
-    @Column(name = "code", length = 20, unique = true)
+    @Column(name = "code", length = 10, unique = true)
     @ValidCode
     private String code;
 
