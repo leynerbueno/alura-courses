@@ -1,7 +1,6 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
 import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.CourseNpsDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
 import io.github.leynerbueno.alura_courses.service.impl.CourseInterface;
@@ -34,13 +34,18 @@ public class CourseController {
     }
 
     @GetMapping("find")
-    public Optional<CourseEntity> find(@RequestBody CourseEntity entity) {
+    public CourseEntity find(@RequestBody CourseEntity entity) {
         return service.find(entity.getId());
     }
 
     @GetMapping("find-by-code")
-    public Optional<CourseEntity> findByCode(@RequestBody CourseEntity entity) {
+    public CourseEntity findByCode(@RequestBody CourseEntity entity) {
         return service.findByCode(entity.getCode());
+    }
+
+    @GetMapping("get-report")
+    public List<CourseNpsDTO> getReport() {
+        return service.getReport();
     }
 
     @GetMapping("filter")

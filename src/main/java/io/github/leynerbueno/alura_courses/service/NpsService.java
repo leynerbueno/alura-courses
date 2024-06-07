@@ -1,5 +1,8 @@
 package io.github.leynerbueno.alura_courses.service;
 
+import java.text.DecimalFormat;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
@@ -12,6 +15,7 @@ import io.github.leynerbueno.alura_courses.rest.dto.nps.NpsDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.registration.RegistrationDTO;
 import io.github.leynerbueno.alura_courses.sender.EmailSender;
 import io.github.leynerbueno.alura_courses.service.impl.NpsInterface;
+import io.github.leynerbueno.alura_courses.service.validate.CourseValidationService;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -22,7 +26,7 @@ public class NpsService implements NpsInterface {
 
     private final NpsRepository repository;
     private final UserService userService;
-    private final CourseService courseService;
+    private final CourseValidationService courseService;
     private final RegistrationService registrationService;
 
     private AluraUtil aluraUtil = AluraUtil.getInstance();
@@ -70,6 +74,32 @@ public class NpsService implements NpsInterface {
             EmailSender.send(instructorEmail, subject, body);
         }
         return newNps;
+    }
+
+    public Integer calculateNps(Integer courseId) {
+        courseService.validate(courseId);
+        List<NpsEntity> listNps = repository.findByCourseId(courseId);
+        Integer promoter = 0;
+        Integer detractor = 0;
+        Double answers = (double) listNps.size();
+
+        for (NpsEntity nps : listNps) {
+            if (nps.getScore() > 9) {
+                promoter++;
+            } else if (nps.getScore() < 6) {
+                detractor++;
+            }
+        }
+
+        if (listNps.isEmpty()) {
+            answers = 1.0;
+        }
+
+        Double nps = ((promoter - detractor) / answers);
+        nps = nps * 100;
+
+        DecimalFormat df = new DecimalFormat("0");
+        return Integer.parseInt(df.format(nps));
     }
 
     private Integer validateScore(Integer score) {

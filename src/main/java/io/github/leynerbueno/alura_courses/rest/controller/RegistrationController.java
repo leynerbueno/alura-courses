@@ -1,7 +1,6 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,7 +31,7 @@ public class RegistrationController {
     }
 
     @GetMapping("find")
-    public Optional<RegistrationEntity> find(@RequestBody RegistrationEntity entity) {
+    public RegistrationEntity find(@RequestBody RegistrationEntity entity) {
         return service.find(entity.getId());
     }
 

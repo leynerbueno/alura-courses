@@ -1,7 +1,6 @@
 package io.github.leynerbueno.alura_courses.rest.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,12 +32,12 @@ public class UserController {
     }
 
     @GetMapping("find")
-    public Optional<UserEntity> find(@RequestBody UserEntity entity) {
+    public UserEntity find(@RequestBody UserEntity entity) {
         return service.find(entity.getId());
     }
 
     @GetMapping("find-by-username")
-    public Optional<UserDTO> findByUsername(@RequestBody UserEntity entity) {
+    public UserDTO findByUsername(@RequestBody UserEntity entity) {
         return service.findByUsername(entity.getUsername());
     }
 

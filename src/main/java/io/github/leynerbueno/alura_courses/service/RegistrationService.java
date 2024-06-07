@@ -1,11 +1,12 @@
 package io.github.leynerbueno.alura_courses.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
 import io.github.leynerbueno.alura_courses.entity.RegistrationEntity;
@@ -16,6 +17,7 @@ import io.github.leynerbueno.alura_courses.exception.GeneralException;
 import io.github.leynerbueno.alura_courses.repository.RegistrationRepository;
 import io.github.leynerbueno.alura_courses.rest.dto.registration.RegistrationDTO;
 import io.github.leynerbueno.alura_courses.service.impl.RegistrationInterface;
+import io.github.leynerbueno.alura_courses.service.validate.CourseValidationService;
 import io.github.leynerbueno.alura_courses.util.AluraUtil;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +28,7 @@ public class RegistrationService implements RegistrationInterface {
 
     private final RegistrationRepository repository;
     private final UserService userService;
-    private final CourseService courseService;
+    private final CourseValidationService courseService;
     private AluraUtil aluraUtil = AluraUtil.getInstance();
 
     public RegistrationEntity validate(Integer id) {
@@ -43,8 +45,7 @@ public class RegistrationService implements RegistrationInterface {
     public RegistrationEntity insert(RegistrationDTO dto) {
         UserEntity student = userService.validate(dto.getStudent(), Role.STUDENT);
 
-        Integer courseId = dto.getCourse();
-        CourseEntity course = courseService.validate(courseId);
+        CourseEntity course = courseService.validate(dto.getCourse());
 
         if (course.getStatus().compareTo(Status.ACTIVE) != 0) {
             throw new GeneralException(
@@ -66,12 +67,13 @@ public class RegistrationService implements RegistrationInterface {
     }
 
     @Override
-    public Optional<RegistrationEntity> find(Integer id) {
+    public RegistrationEntity find(Integer id) {
         if (id == null) {
             throw new GeneralException("id is required");
         }
 
-        return repository.findById(id);
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Registration not found"));
     }
 
     @Override
@@ -120,13 +122,13 @@ public class RegistrationService implements RegistrationInterface {
     }
 
     public void checkStudentRegistration(RegistrationDTO dto) {
-        if (this.isStudentAlreadRegistrated(dto)) {
+        if (this.isStudentRegistrated(dto)) {
             throw new GeneralException(
                     "The student informed it's already registered in this course");
         }
     }
 
-    public Boolean isStudentAlreadRegistrated(RegistrationDTO dto) {
+    public Boolean isStudentRegistrated(RegistrationDTO dto) {
         RegistrationEntity registration = repository.findByStudentIdAndCourseId(dto.getStudent(),
                 dto.getCourse());
 

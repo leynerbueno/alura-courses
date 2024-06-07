@@ -1,5 +1,6 @@
 package io.github.leynerbueno.alura_courses.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,8 +10,10 @@ import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.leynerbueno.alura_courses.entity.CourseEntity;
 import io.github.leynerbueno.alura_courses.entity.UserEntity;
@@ -19,6 +22,7 @@ import io.github.leynerbueno.alura_courses.enums.Status;
 import io.github.leynerbueno.alura_courses.exception.GeneralException;
 import io.github.leynerbueno.alura_courses.repository.CourseRepository;
 import io.github.leynerbueno.alura_courses.rest.dto.course.CourseDTO;
+import io.github.leynerbueno.alura_courses.rest.dto.course.CourseNpsDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.FilteredCoursesDTO;
 import io.github.leynerbueno.alura_courses.rest.dto.course.ListCourseDTO;
 import io.github.leynerbueno.alura_courses.service.event.CourseInactivatedEvent;
@@ -32,6 +36,8 @@ public class CourseService implements CourseInterface {
 
     private final CourseRepository repository;
     private final UserService userService;
+    private final NpsService npsService;
+    private final RegistrationService registrationService;
     private final ApplicationEventPublisher publisher;
 
     private AluraUtil aluraUtil = AluraUtil.getInstance();
@@ -60,21 +66,23 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
-    public Optional<CourseEntity> find(Integer id) {
+    public CourseEntity find(Integer id) {
         if (id == null) {
             throw new GeneralException("id is required");
         }
 
-        return repository.findById(id);
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Course not found"));
     }
 
     @Override
-    public Optional<CourseEntity> findByCode(String code) {
+    public CourseEntity findByCode(String code) {
         if (code == null) {
             throw new GeneralException("code is required");
         }
 
-        return repository.findByCode(code);
+        return repository.findByCode(code).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "Course not found"));
     }
 
     @Override
@@ -123,6 +131,45 @@ public class CourseService implements CourseInterface {
     }
 
     @Override
+    public List<CourseNpsDTO> getReport() {
+        List<CourseNpsDTO> report = new ArrayList<CourseNpsDTO>();
+        List<CourseEntity> coursesWithRegistration = new ArrayList<CourseEntity>();
+        List<CourseEntity> courses = repository.findAll();
+
+        for (CourseEntity course : courses) {
+            if (registrationService.listByCourse(course.getId()).size() > 2) {
+                coursesWithRegistration.add(course);
+            }
+        }
+
+        for (CourseEntity course : coursesWithRegistration) {
+            String dsNps;
+            Integer nps = npsService.calculateNps(course.getId());
+            if (nps >= 75) {
+                dsNps = "Excellent";
+
+            } else if (nps >= 47 && nps <= 69) {
+                dsNps = "Very good";
+
+            } else if (nps >= 0 && nps <= 46) {
+                dsNps = "Reasonable";
+
+            } else {
+                dsNps = "Bad";
+            }
+
+            CourseNpsDTO dto = new CourseNpsDTO();
+            dto.setId(course.getId());
+            dto.setName(course.getName());
+            dto.setNps(nps);
+            dto.setDsNps(dsNps);
+            report.add(dto);
+        }
+
+        return report;
+    }
+
+    @Override
     @Transactional
     public CourseEntity update(CourseDTO dto) {
         Integer id = dto.getId();
@@ -164,15 +211,6 @@ public class CourseService implements CourseInterface {
         repository.save(entity);
 
         publisher.publishEvent(new CourseInactivatedEvent(this, entity.getId()));
-    }
-
-    public CourseEntity validate(Integer id) {
-        if (id == null) {
-            throw new GeneralException("id is required");
-        }
-
-        return repository.findById(id)
-                .orElseThrow(() -> new GeneralException("Course not found"));
     }
 
     public CourseEntity validateByCode(String code) {

@@ -5,8 +5,10 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Example;
 import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import io.github.leynerbueno.alura_courses.entity.UserEntity;
 import io.github.leynerbueno.alura_courses.enums.Role;
@@ -49,18 +51,24 @@ public class UserService implements UserInterface {
     }
 
     @Override
-    public Optional<UserEntity> find(Integer id) {
+    public UserEntity find(Integer id) {
         if (id == null) {
             throw new GeneralException("id is required");
         }
 
-        return repository.findById(id);
+        return repository.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                "User not found"));
     }
 
     @Override
-    public Optional<UserDTO> findByUsername(String username) {
+    public UserDTO findByUsername(String username) {
         return repository.findByUsername(username)
-                .map(user -> this.converter(user));
+                .map(user -> {
+                    UserDTO dto = new UserDTO();
+                    dto = this.converter(user);
+                    return dto;
+                }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "User not found"));
     }
 
     @Override
